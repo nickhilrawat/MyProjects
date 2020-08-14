@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="GradleLocalSettings">
+    <option name="projectSyncType">
+      <map>
+        <entry key="$USER_HOME$/Documents/Projects/appriser" value="PREVIEW" />
+        <entry key="$USER_HOME$/Documents/Projects/client-integration" value="PREVIEW" />
+        <entry key="$USER_HOME$/Documents/Projects/riconet" value="PREVIEW" />
+        <entry key="$USER_HOME$/Documents/Projects/zoom-communication" value="PREVIEW" />
+        <entry key="$USER_HOME$/Documents/Projects/zoom-datastore" value="PREVIEW" />
+        <entry key="$USER_HOME$/Documents/Projects/zoom-ticketing" value="PREVIEW" />
+        <entry key="$USER_HOME$/Documents/Projects/zoom-wms" value="PREVIEW" />
+        <entry key="$USER_HOME$/zoom/zoom-communication" value="PREVIEW" />
+      </map>
+    </option>
+  </component>
+  <component name="PropertiesComponent">
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="settings.editor.selected.configurable" value="preferences.sourceCode.Java" />
+  </component>
+</project>
