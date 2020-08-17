@@ -23,9 +23,7 @@ public class Response<T> {
   private ResponseStatus status;
   /** Error message if any */
   private String errorMessage;
-  /**
-   * The error details from body in case of Exception
-   */
+  /** The error details from body in case of Exception */
   private Object errors;
 
   public static <T> Response<T> success(T payload) {

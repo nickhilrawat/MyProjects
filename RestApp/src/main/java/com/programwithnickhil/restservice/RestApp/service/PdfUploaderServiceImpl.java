@@ -1,5 +1,6 @@
 package com.programwithnickhil.restservice.RestApp.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programwithnickhil.restservice.RestApp.dto.PdfDetailsDto;
 import com.programwithnickhil.restservice.RestApp.exceptions.PdfReaderException;
 import com.programwithnickhil.restservice.RestApp.model.PdfDetailsModel;
@@ -13,40 +14,99 @@ import java.util.Optional;
 @Service
 public class PdfUploaderServiceImpl implements PdfUploaderService {
 
+  /**
+   * Autowired pdfDetailsRepository dependency for database operations.
+   */
   @Autowired
-  PdfDetailsRepository pdfDetailsRepository;
+  private PdfDetailsRepository pdfDetailsRepository;
+
+  /**
+   * This API is used to upload a pdf file to our server and which is then processed by an OCR for further enrichment.
+   * @param file file to be uploaded.
+   * @return returns the dto of the enriched data form uploaded file.
+   */
   @Override
-  public boolean uploadPdf(MultipartFile file) {
-    return false;
+  public PdfDetailsDto uploadPdf(MultipartFile file) {
+
+    /** 
+     * here assuming that the file has been uploaded to s3 bucket and OCR has detected data from it,
+     * we'll map all the enriched data to the DTO and save it to our mysqlDB.
+     */
+    
+    PdfDetailsModel pdfDetailsModel = new PdfDetailsModel();
+    pdfDetailsModel.setConsigneeAddress("New Delhi");
+    pdfDetailsModel.setConsignorAddress("Bombay");
+    pdfDetailsModel.setInvoiceDate(System.currentTimeMillis());
+    pdfDetailsModel.setInvoiceNo("INV"+ System.currentTimeMillis());
+    pdfDetailsModel.setEWaybillExpiryTime(System.currentTimeMillis());
+    pdfDetailsModel.setEWaybillNumber(String.valueOf(System.currentTimeMillis()));
+    pdfDetailsModel.setInvoiceValue(1200D);
+    pdfDetailsModel.setNumberOfBoxes(10);
+    pdfDetailsModel.setWeight(12D);
+
+    return convertFromPdfModel(pdfDetailsRepository.save(pdfDetailsModel));
   }
 
+  /**
+   * This API is used to fetch data form the database based on the invoice number.
+   * @param invoiceNo invoice number of the invoice.
+   * @return PdfDetailsDto having details of that invoice.
+   */
   @Override
-  public PdfDetailsDto getPdfData() {
-    return PdfDetailsDto.builder()
-        .consigneeAddress("New Delhi")
-        .consignorAddress("Bombay")
-        .invoiceDate(System.currentTimeMillis())
-        .invoiceId(1L)
-        .invoiceNo("1234")
-        .eWaybillExpiryTime(System.currentTimeMillis())
-        .eWaybillNumber("124356534254")
-        .invoiceValue(1200D)
-        .numberOfBoxes(10)
-        .weight(12D)
-        .build();
+  public PdfDetailsDto getPdfData(String invoiceNo) {
+    /** checking if any entry is present in the DB with the given invoiceNo */
+    PdfDetailsModel pdfDetailsModel = pdfDetailsRepository.findByInvoiceNo(invoiceNo);
+    if(pdfDetailsModel == null){
+      throw new PdfReaderException("Invoice with this id does not exist");
+    }
+    return convertFromPdfModel(pdfDetailsModel);
   }
 
+  /**
+   * This API is used to update some data which is already stored in the sql table via invoiceNo.
+   * @param pdfDetailsDto dto with details to be updated.
+   * @return pdfDetails dto with updated data.
+   */
   @Override
-  public PdfDetailsDto updatePdfData(PdfDetailsDto pdfDetailsDto) throws Exception {
-
+  public PdfDetailsDto updatePdfData(PdfDetailsDto pdfDetailsDto) {
+    /** checking if any entry is present in the DB with the given invoiceNo */
     PdfDetailsModel pdfDetailsModel = pdfDetailsRepository.findByInvoiceNo(pdfDetailsDto.getInvoiceNo());
     if(pdfDetailsModel == null){
       throw new PdfReaderException("Invoice with this id does not exist");
     }
-    pdfDetailsRepository.save(convertToPdfModel(pdfDetailsModel, pdfDetailsDto));
-    return null;
+    return convertFromPdfModel(pdfDetailsRepository.save(convertToPdfModel(pdfDetailsModel, pdfDetailsDto)));
   }
 
+  /**
+   * Converter to convert pdfDetailsModel to PdfDetailsDto.
+   * @param pdfDetailsModel model returned from DB.
+   * @return PdfDetailsDto.
+   */
+  private PdfDetailsDto convertFromPdfModel(PdfDetailsModel pdfDetailsModel) {
+    PdfDetailsDto pdfDetailsDto = PdfDetailsDto.builder().build();
+    Optional.ofNullable(pdfDetailsModel.getId()).ifPresent(pdfDetailsDto::setInvoiceId);
+    Optional.ofNullable(pdfDetailsModel.getInvoiceValue()).ifPresent(pdfDetailsDto::setInvoiceValue);
+    Optional.ofNullable(pdfDetailsModel.getInvoiceNo()).ifPresent(pdfDetailsDto::setInvoiceNo);
+    Optional.ofNullable(pdfDetailsModel.getInvoiceDate()).ifPresent(pdfDetailsDto::setInvoiceDate);
+
+    Optional.ofNullable(pdfDetailsModel.getNumberOfBoxes()).ifPresent(pdfDetailsDto::setNumberOfBoxes);
+    Optional.ofNullable(pdfDetailsModel.getWeight()).ifPresent(pdfDetailsDto::setWeight);
+
+    Optional.ofNullable(pdfDetailsModel.getEWaybillExpiryTime()).ifPresent(pdfDetailsDto::setEWaybillExpiryTime);
+    Optional.ofNullable(pdfDetailsModel.getEWaybillNumber()).ifPresent(pdfDetailsDto::setEWaybillNumber);
+
+    Optional.ofNullable(pdfDetailsModel.getConsignorAddress()).ifPresent(pdfDetailsDto::setConsignorAddress);
+    Optional.ofNullable(pdfDetailsModel.getConsigneeAddress()).ifPresent(pdfDetailsDto::setConsigneeAddress);
+    return pdfDetailsDto;
+//    return objectMapper.convertValue(pdfDetailsModel, PdfDetailsDto.class);
+  }
+
+  /**
+   * Converter to convert PdfDetailsDto to pdfDetailsModel.
+   * @param pdfDetailsModel model from DB.
+   * @param pdfDetailsDto dto with the data in the model.
+   * @return model.
+   */
   private PdfDetailsModel convertToPdfModel(PdfDetailsModel pdfDetailsModel, PdfDetailsDto pdfDetailsDto) {
     Optional.ofNullable(pdfDetailsDto.getInvoiceValue()).ifPresent(pdfDetailsModel::setInvoiceValue);
     Optional.ofNullable(pdfDetailsDto.getInvoiceNo()).ifPresent(pdfDetailsModel::setInvoiceNo);
