@@ -1,7 +1,7 @@
 package com.programwithnickhil.restservice.RestApp.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.programwithnickhil.restservice.RestApp.dto.PdfDetailsDto;
+import com.programwithnickhil.restservice.RestApp.enums.DigitizationStatus;
 import com.programwithnickhil.restservice.RestApp.exceptions.PdfReaderException;
 import com.programwithnickhil.restservice.RestApp.model.PdfDetailsModel;
 import com.programwithnickhil.restservice.RestApp.repository.PdfDetailsRepository;
@@ -43,6 +43,7 @@ public class PdfUploaderServiceImpl implements PdfUploaderService {
     pdfDetailsModel.setInvoiceValue(1200D);
     pdfDetailsModel.setNumberOfBoxes(10);
     pdfDetailsModel.setWeight(12D);
+    pdfDetailsModel.setStatus(DigitizationStatus.IN_PROGRESS);
 
     return convertFromPdfModel(pdfDetailsRepository.save(pdfDetailsModel));
   }
@@ -58,6 +59,9 @@ public class PdfUploaderServiceImpl implements PdfUploaderService {
     PdfDetailsModel pdfDetailsModel = pdfDetailsRepository.findByInvoiceNo(invoiceNo);
     if(pdfDetailsModel == null){
       throw new PdfReaderException("Invoice with this id does not exist");
+    }
+    if(DigitizationStatus.IN_PROGRESS.equals(pdfDetailsModel.getStatus())){
+      throw new PdfReaderException("Invoice with this id is not yet digitized");
     }
     return convertFromPdfModel(pdfDetailsModel);
   }
@@ -76,7 +80,7 @@ public class PdfUploaderServiceImpl implements PdfUploaderService {
     }
     return convertFromPdfModel(pdfDetailsRepository.save(convertToPdfModel(pdfDetailsModel, pdfDetailsDto)));
   }
-
+  
   /**
    * Converter to convert pdfDetailsModel to PdfDetailsDto.
    * @param pdfDetailsModel model returned from DB.
@@ -97,6 +101,7 @@ public class PdfUploaderServiceImpl implements PdfUploaderService {
 
     Optional.ofNullable(pdfDetailsModel.getConsignorAddress()).ifPresent(pdfDetailsDto::setConsignorAddress);
     Optional.ofNullable(pdfDetailsModel.getConsigneeAddress()).ifPresent(pdfDetailsDto::setConsigneeAddress);
+    Optional.ofNullable(pdfDetailsModel.getStatus()).ifPresent(pdfDetailsDto::setStatus);
     return pdfDetailsDto;
 //    return objectMapper.convertValue(pdfDetailsModel, PdfDetailsDto.class);
   }
@@ -120,6 +125,39 @@ public class PdfUploaderServiceImpl implements PdfUploaderService {
     
     Optional.ofNullable(pdfDetailsDto.getConsignorAddress()).ifPresent(pdfDetailsModel::setConsignorAddress);
     Optional.ofNullable(pdfDetailsDto.getConsigneeAddress()).ifPresent(pdfDetailsModel::setConsigneeAddress);
+    Optional.ofNullable(pdfDetailsDto.getStatus()).ifPresent(pdfDetailsModel::setStatus);
     return pdfDetailsModel;
+  }
+
+  /**
+   * This API is used to update digitization status of the invoice data.
+   *
+   * @param invoiceNo invoice umber to be marked digitized.
+   * @return pdfDetails dto with updated data.
+   */
+  @Override
+  public PdfDetailsDto updateStatus(String invoiceNo) {
+    /** checking if any entry is present in the DB with the given invoiceNo */
+    PdfDetailsModel pdfDetailsModel = pdfDetailsRepository.findByInvoiceNo(invoiceNo);
+    if(pdfDetailsModel == null){
+      throw new PdfReaderException("Invoice with this id does not exist");
+    }
+    pdfDetailsModel.setStatus(DigitizationStatus.DIGITIZED);
+    return convertFromPdfModel(pdfDetailsRepository.save(pdfDetailsModel));
+  }
+
+  /**
+   * This API is used to fetch digitization status of a pdf via invoice number.
+   *
+   * @param invoiceNo invoice number of the invoice.
+   * @return digitization status.
+   */
+  @Override
+  public String getPdfStatus(String invoiceNo){
+    PdfDetailsModel pdfDetailsModel = pdfDetailsRepository.findByInvoiceNo(invoiceNo);
+    if(pdfDetailsModel == null){
+      throw new PdfReaderException("Invoice with this id does not exist");
+    }
+    return "Pdf digitization status is : " + pdfDetailsModel.getStatus();
   }
 }

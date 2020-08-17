@@ -1,6 +1,7 @@
 package com.programwithnickhil.restservice.RestApp.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.programwithnickhil.restservice.RestApp.enums.DigitizationStatus;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,4 +24,5 @@ public class PdfDetailsDto {
 
   private String consignorAddress;
   private String consigneeAddress;
+  private DigitizationStatus status;
 }

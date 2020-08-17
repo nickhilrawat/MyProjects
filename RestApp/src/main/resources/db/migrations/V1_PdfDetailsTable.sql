@@ -8,5 +8,6 @@ CREATE TABLE `pdf_details` (
   `eway_bill_expiry_time` bigint NOT NULL,
   `eway_bill_number` bigint NOT NULL,
   `consignor_address` varchar(20) NOT NULL,
-    `consignee_address` varchar(20) NOT NULL
+    `consignee_address` varchar(20) NOT NULL,
+    `status` varchar(20) NOT NULL
 );

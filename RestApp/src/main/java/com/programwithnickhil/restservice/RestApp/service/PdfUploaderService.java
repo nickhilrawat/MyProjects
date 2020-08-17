@@ -29,4 +29,20 @@ public interface PdfUploaderService {
    * @return pdfDetails dto with updated data.
    */
   PdfDetailsDto updatePdfData(PdfDetailsDto pdfDetailsDto);
+
+  /**
+   * This API is used to update digitization status of the invoice data.
+   *
+   * @param invoiceNo invoice umber to be marked digitized.
+   * @return pdfDetails dto with updated data.
+   */
+  PdfDetailsDto updateStatus(String invoiceNo);
+
+  /**
+   * This API is used to fetch digitization status of a pdf via invoice number.
+   *
+   * @param invoiceNo invoice number of the invoice.
+   * @return digitization status.
+   */
+  String getPdfStatus(String invoiceNo);
 }

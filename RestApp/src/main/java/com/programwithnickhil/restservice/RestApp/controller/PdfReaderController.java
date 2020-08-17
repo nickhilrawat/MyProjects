@@ -65,4 +65,29 @@ public class PdfReaderController {
   public Response<PdfDetailsDto> getPdfDetails(@PathVariable String invoiceNo) {
     return Response.success(pdfUploaderService.getPdfData(invoiceNo));
   }
+
+  /**
+   * This API is used to update digitization status of the invoice data.
+   *
+   * @param invoiceNo invoice umber to be marked digitized.
+   * @return pdfDetails dto with updated data.
+   */
+  @PutMapping("/markInvoiceDigitized/{invoiceNo}")
+  public Response<PdfDetailsDto> updatePdfDetails(@PathVariable String invoiceNo) {
+    String emsg = "error occured while updating pdf details, please contact support. error code: ";
+    request.setAttribute("emsg", emsg);
+    return Response.success(pdfUploaderService.updateStatus(invoiceNo));
+  }
+
+  /**
+   * This API is used to fetch digitization status of a pdf via invoice number.
+   *
+   * @param invoiceNo invoice number of the invoice.
+   * @return digitization status.
+   */
+  @GetMapping("/getPdfStatus/{invoiceNo}")
+  public Response<String> getPdfStatus(@PathVariable String invoiceNo) {
+    return Response.success(pdfUploaderService.getPdfStatus(invoiceNo));
+  }
+  
 }

@@ -3,10 +3,14 @@ package com.programwithnickhil.restservice.RestApp.model;
 import java.io.Serializable;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+
+import com.programwithnickhil.restservice.RestApp.enums.DigitizationStatus;
 import lombok.Getter;
 import lombok.Setter;
 import org.dom4j.tree.AbstractEntity;
@@ -49,4 +53,8 @@ public class PdfDetailsModel extends AbstractEntity implements Serializable {
 
   @Column(name = "consignee_address")
   private String consigneeAddress;
+
+  @Column(name = "status")
+  @Enumerated(EnumType.STRING)
+  private DigitizationStatus status;
 }
